@@ -5,23 +5,51 @@
 
 #define DEBUG false
 #define FILE_PATH "../IdeaProjects/BrainFunk/tests/hello_world.bf"
-#define TAPE_SIZE 100
+#define TAPE_SIZE 30000
 
 char tape[TAPE_SIZE] = {0};
 int ptr = 0;
 
-int main() {
-	FILE *file = fopen(FILE_PATH, "r");
-	fseek(file, 0, SEEK_END);
-	long fsize = ftell(file);
-	fseek(file, 0, SEEK_SET);
+typedef enum {
+	PLUS,
+	MINUS,
+	GREATER,
+	LESS,
+	LBRACKET,
+	RBRACKET,
+	DOT,
+	COMMA
+} TokenType;
 
-	char* input = malloc(fsize + 1);
-	fread(input, fsize, 1, file);
+typedef struct {
+	char* file_path;
+	int row;
+	int col;
+} Location;
+
+typedef struct {
+	TokenType type;
+	Location loc;
+	int num;
+	char* str;
+} Token;
+
+char* read_file_bytes(char* file_path, size_t* file_size) {
+	FILE *file = fopen(file_path, "rb");
+	fseek(file, 0, SEEK_END);
+	*file_size = ftell(file);
+	fseek(file, 0, SEEK_SET);
+	char* file_bytes = malloc(*file_size + 1);
+	fread(file_bytes, *file_size, 1, file);
 	fclose(file);
-	input[fsize] = 0;
-	int input_len = strlen(input);
-	
+	file_bytes[*file_size] = 0;
+	return file_bytes;
+}
+
+int main() {
+
+	size_t input_len = 0;
+	char* input = read_file_bytes(FILE_PATH, &input_len);
 	printf("Read %d bytes of file '%s' succesfully\n", input_len, FILE_PATH);
 
 	int i = 0;
@@ -83,9 +111,5 @@ int main() {
 		}
 end_loop:
 		i += 1;
-	}
-	printf("\n---------------------------\n");
-	for (i = 0; i < TAPE_SIZE; ++i) {
-		printf("%d ", tape[i]);
 	}
 }
